@@ -37,8 +37,6 @@ SELECT COUNT(*) as total FROM `visits` WHERE DoctorId = ? AND VisitDate BETWEEN 
         exit;
     }
 
-
-
     $visitId = $_SESSION['active_visitId'];
 
     $visit = $db->querySingle("SELECT * FROM visits WHERE Id = ?", [$visitId]);
@@ -53,6 +51,7 @@ SELECT COUNT(*) as total FROM `visits` WHERE DoctorId = ? AND VisitDate BETWEEN 
     }
 
     unset($_SESSION['active_visitId']);
+    $db->closeConn();
     header('Location: /hospital/patient/dashboard.php?info=addedVisit');
     exit;
 ?>

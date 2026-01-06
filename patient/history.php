@@ -32,6 +32,7 @@ if ($info == 'positive_download') {
 }
 
 include __DIR__ . '/../includes/infoLine.php';
+$db->closeConn();
 ?>
 <div class="row">
     <div class="d-flex  justify-content-center">

@@ -53,10 +53,9 @@ fputcsv($output, [], ';');
 
 fputcsv($output, ['Medicines:', 'Name:', 'Dosage Form:', 'Active substance:', 'Count:', 'Doctor instructions',], ';');
 
-// LINIA 6+: Dane z bazy (leki)
 foreach ($prescriptionitems as $m) {
     fputcsv($output, [
-        '', // pusta komórka pod napisem "LEKI:"
+        '',
         $m['MedicineName'],
         $m['DosageForm'],
         $m['ActiveSubstance'],
@@ -70,7 +69,5 @@ fputcsv($output, [], ';');
 fputcsv($output, ['','','','','','Print date:', date('Y.m.d')], ';');
 
 fclose($output);
-
-
-//header('Location: /hospital/patient/history.php?info=positive_download');
+$db->closeConn();
 ?>

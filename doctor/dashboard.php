@@ -33,6 +33,7 @@ if (isset($_GET['info'])) {
 }
 
 include '../includes/infoLine.php';
+$db->closeConn();
 ?>
 
 <h1>Welcome doctor <?= htmlspecialchars($_SESSION['name'] . ' ' . $_SESSION['surname']) ?></h1>

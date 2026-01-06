@@ -37,6 +37,7 @@
     $db->execute("UPDATE visits SET VisitDate = ?, Summary= ?, Status = ?, LongDescription = ? WHERE Id = ?",
     [$currentDate, $visitDesc, 'completed', $visitLongDesc, $vId]);
 
+    $db->closeConn();
     header("Location: /hospital/doctor/visit_close.php");
     exit;
 ?>

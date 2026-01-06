@@ -90,6 +90,7 @@ if (isset($_POST['remove_disease_temp'])) {
 }
 
 include '../includes/infoLine.php';
+$db->closeConn();
 ?>
 <div class="row">
     <div class="col-4 col-lg-3 py-2">

@@ -92,6 +92,7 @@ removeFromTempList('remove_medicine_temp',
         $_SERVER['PHP_SELF'] . "?id=" . $visitId);
 
     include "../includes/infoLine.php";
+    $db->closeConn();
 ?>
 <div class="row">
     <div class="card card-sm col-5">

@@ -21,7 +21,12 @@
 
         if($visitExist == -1 || $visitExist == $visitId){
             $_SESSION['active_visitId'] = $visitId;
-            header("Location: ". $destination .".php?id=" . $visitId);
+            // header("Location: ". $destination .".php?id=" . $visitId);
+            $see = $_GET['see'] ?? '';
+            if(!empty($see)){
+                $see = "?see=" . $see;
+            }
+            header("Location: ". $destination . ".php" . $see);
         }
         else{
             $_SESSION['active_visitId'] = $visitExist;

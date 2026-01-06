@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $error = "Niepoprawny login lub hasło!";
     }
+    $db->closeConn();
 }
 
 ?>

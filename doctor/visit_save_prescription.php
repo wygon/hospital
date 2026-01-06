@@ -63,6 +63,7 @@ WHERE PrescriptionId = ? AND MedicineId = ? ",
     unset($medicine);
     unset($_SESSION['temp_medicines']);
 
+    $db->closeConn();
     header("Location: /hospital/doctor/visit_details.php");
     exit;
 ?>

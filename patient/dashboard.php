@@ -24,8 +24,8 @@ if ($info == 'addedVisit') {
     $SUCCESS_INFO = 'Added visit positivly';
 }
 
-
 include __DIR__ . '/../includes/infoLine.php';
+$db->closeConn();
 ?>
 
 <h1>Welcome patient <?= htmlspecialchars($_SESSION['name'] . ' ' . $_SESSION['surname']) ?></h1>
@@ -54,7 +54,7 @@ include __DIR__ . '/../includes/infoLine.php';
                                     <td><?= htmlspecialchars($row['DoctorName']) . ' ' .  htmlspecialchars($row['DoctorSurname']) ?></td>
                                     <td><?= htmlspecialchars($row['Summary']) ?></td>
                                     <td><?= htmlspecialchars($row['VisitDate']) ?></td>
-                                    <td><a href="visit_start.php?id=<?= $row['Id'] ?>">DETAILS</a></td>
+                                    <td><a href="/hospital/visit/visit_start.php?id=<?= $row['Id'] ?>&destination=edit&see=1">DETAILS</a></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

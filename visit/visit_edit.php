@@ -11,6 +11,7 @@ $desiredSpecialization = $_GET['specialization'] ?? -1;
 
 $visitId = $_SESSION['active_visitId'];
 $info = $_GET['info'] ?? '';
+$seemode = $_GET['see'] ?? '';
 
 if ($visitId != -1) {
     $visit = $db->querySingle("SELECT * FROM visits WHERE Id = ?", [$visitId]);
@@ -64,10 +65,11 @@ if ($info == 'otherVisitIsActive') {
 }
 
 include '../includes/infoLine.php';
+$db->closeConn();
 ?>
 
 <div class="row">
-    <div class="col-8">
+    <div class=<?= empty($seemode) ? 'col-8' : 'col-12' ?>>
         <div class="card">
             <form id=visit_add_form method=post action='visit_add.php' class="row" onsubmit="return validateForm()">
                 <div class="col-12 d-flex">
@@ -109,11 +111,16 @@ include '../includes/infoLine.php';
                 </span>
             </form>
             <div class="d-flex justify-content-end">
-                <button class="btn btn-secondary m-3" type="submit" form=visit_add_form> Submit</button>
-                <a href='visit_close.php'><button class="btn btn-secondary m-3" type="button"> Cancel</button></a>
+                <?php if(empty($seemode)):?>
+                    <button class="btn btn-secondary m-3" type="submit" form=visit_add_form>Submit</button>
+                    <a href='visit_close.php'><button class="btn btn-secondary m-3" type="button">Cancel</button></a>
+                <?php else: ?>
+                    <a href='visit_close.php'><button class="btn btn-secondary m-3" type="button">Close</button></a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
+    <?php if(empty($seemode)):?>
     <div class="col-3">
         <div class="card">
             <div class="card-header">
@@ -137,6 +144,7 @@ include '../includes/infoLine.php';
         </div>
     </div>
 </div>
+<?php endif;?>
 <?php include '../includes/footer.php'; ?>
 
 

@@ -59,5 +59,8 @@ class Database{
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
+    public function closeConn() {
+        $this->conn->close();
+    }
 }
 ?>
