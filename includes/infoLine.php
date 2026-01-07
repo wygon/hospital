@@ -1,10 +1,11 @@
 <?php 
-function printInfo($color, &$text){
-        echo '<div class="alert text-center '. $color .'"> <p>';
-            echo $text;
-        echo '</p></div>';
-        $text = '';
-}
+    function printInfo($color, &$text){
+            echo '<div class="alert text-center '. $color .'"> <p>';
+                echo $text;
+            echo '</p></div>';
+            $text = '';
+    }
+    
     global $ERROR_INFO;
     if(!empty($ERROR_INFO)){
         printInfo('alert-danger', $ERROR_INFO);

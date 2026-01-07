@@ -8,6 +8,19 @@ require_once 'helpers/functions.php';
 
 $error = '';
 
+function register($db, $name, $surname, $username, $password, $role, $specialization) {
+        $sql = "INSERT INTO users (Name, Surname, Username, Password, Role, Specialization,)
+         VALUES (?,?,?,?,?,?)";
+
+        $db->execute($sql, [$name, $surname, $username, $password, $role, $specialization]);
+        $result = $db->lastInsertId();
+
+        if($result != 0)
+            return $result;
+
+        return false;
+    }
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = new Database();
 
@@ -27,8 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Doctor must specify specialization!";
         exit;
     }
-
-    $userObj = new User($db);
 
     $goodRegister = $userObj->register($name, $surname, $username, $password, $role, $specialization);
     

@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . "/../helpers/database.php";
+require_once __DIR__ . "/../helpers/messagesManager.php";
 
 function isEmpty($item)
 {
@@ -74,5 +76,31 @@ function removeFromTempList($command, $collection, $successInfo, $header)
     }
 }
 
-?>
+function setIfEmpty(&$variable, $setTO = '')
+{
+    if (empty($variable)) {
+        $variable = $setTO;
+    }
+}
 
+function postTo($location, $hiddenParams = [])
+{
+    $hiddenParamsString = '';
+    foreach ($hiddenParams as $name => $value)
+        $name = htmlspecialchars($name);
+        $value = htmlspecialchars($value);
+        $hiddenParamsString .= "<input hidden name='$name' value='$value'/> \n";
+
+    echo "
+
+<form id='postTo' method='post' action='$location'> $hiddenParamsString </form>
+
+
+<script>
+    document.getElementById('postTo').submit();
+</script>
+
+";
+
+exit;
+}

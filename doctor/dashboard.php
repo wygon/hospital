@@ -1,7 +1,7 @@
 <?php
-include '../includes/header.php';
-require_once '../helpers/functions.php';
-require_once '../classes/Database.php';
+include __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../helpers/functions.php';
+require_once __DIR__ . '/../classes/Database.php';
 
 validateCanSeePage('doctor');
 
@@ -22,7 +22,7 @@ $upcommingVisit = $db->queryAll($upcommingVisitQuery, [$_SESSION['user_id']]);
 
 if (isset($_GET['info'])) {
     global $SUCCESS_INFO, $INFORMATION_INFO;
-    
+
     if ($_GET['info'] == 'visit_closed') {
         $SUCCESS_INFO = 'Visit ended!';
     }
@@ -32,7 +32,7 @@ if (isset($_GET['info'])) {
     }
 }
 
-include '../includes/infoLine.php';
+//include '../includes/infoLine.php';
 $db->closeConn();
 ?>
 
@@ -60,7 +60,7 @@ $db->closeConn();
                                 <td class=<?= getBgColorBasedOnStatus($row['Status']) ?>><?= htmlspecialchars($row['Status']) ?></td>
                                 <td><?= htmlspecialchars($row['Summary']) ?></td>
                                 <td><?= htmlspecialchars($row['VisitDate']) ?></td>
-                                <td><a href="visit_start.php?id=<?= $row['Id'] ?>">DETAILS</a></td>
+                                <td><a href="/hospital/visit/visit_start.php?id=<?= $row['Id'] ?>&destination=start&see=1">DETAILS</a></td>
                             </tr>
                         <?php endforeach; ?>
                         <tr>
@@ -112,12 +112,12 @@ $db->closeConn();
             </table>
         </div>
     </div>
-<?php include '../includes/footer.php'; ?>
+    <?php include __DIR__ . '/../includes/footer.php'; ?>
 
-<script>
-    function startVisit(visitId) {
-        if (confirm("Czy na pewno chcesz rozpocząć wizytę #" + visitId + "?")) {
-            window.location.href = "/hospital/visit/visit_start.php?id=" + visitId + "&destination=start";
+    <script>
+        function startVisit(visitId) {
+            if (confirm("Czy na pewno chcesz rozpocząć wizytę #" + visitId + "?")) {
+                window.location.href = "/hospital/visit/visit_start.php?id=" + visitId + "&destination=start";
+            }
         }
-    }
-</script>
+    </script>

@@ -1,41 +1,55 @@
 <?php
-    include 'includes/header.php';
-
-    require_once 'config/config.php';
-    require_once 'classes/database.php';
-    require_once 'classes/user.php';
+include 'includes/header.php';
 
 $error = '';
 $receivedError = $_GET['from'] ?? '';
 
-if(!empty($receivedError)){
-    if($receivedError == 'invalidLogin')
-    $error = "You can't go into this area.";
+if (!empty($receivedError)) {
+    if ($receivedError == 'invalidLogin')
+        $error = "You can't go into this area.";
 }
 
+function login($username, $password)
+{
+    $sql = "SELECT Id, Password, Role, Name, Surname FROM Users WHERE Username = ?";
+
+    $connection = connectDB();
+
+    $result = execute($connection, $sql, [$username]);
+
+    if ($result->num_rows === 1) {
+        $user = $result->fetch_assoc();
+
+        if ($user['Password'] == $password) {
+            return $user;
+        }
+        // if (password_verify($password, $user['Password'])) {
+        //     return $user; // Zwracamy dane użytkownika
+        // }
+    }
+
+    closeConn($connection);
+    return false;
+}
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $db = new Database();
-    $userObj = new User($db);
 
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    $userData = $userObj->login($username, $password);
+    $userData = login($username, $password);
 
     if ($userData) {
         $_SESSION['user_id'] = $userData['Id'];
         $_SESSION['role']    = $userData['Role'];
         $_SESSION['name']    = $userData['Name'];
         $_SESSION['surname'] = $userData['Surname'];
-        
-        $USER_FULLNAME = $_SESSION['name'] . ' ' . $_SESSION['surname'];
-        
-        if ($userData['Role'] === 'doctor') {
-            header("Location: doctor/dashboard.php");
-            // header("Location: index.php");
-        } else {
-            header("Location: patient/dashboard.php");
-        }
+
+        $_SESSION[USER_FULLNAME] = $_SESSION['name'] . ' ' . $_SESSION['surname'];
+
+        header("Location: dashboard.php");
+
         exit;
     } else {
         $error = "Niepoprawny login lub hasło!";
@@ -45,15 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 ?>
 
-    <div class="login-container">
-        <h2>Zaloguj się do systemu</h2>
-        <?php if ($error): ?> <p style="color:red;"><?= $error ?></p> <?php endif; ?>
-        
-        <form method="POST">
-            <input type="text" name="username" placeholder="Login" required><br>
-            <input type="password" name="password" placeholder="Hasło" required><br>
-            <button type="submit">Zaloguj</button>
-        </form>
-    </div>
-    
+<div class="login-container">
+    <h2>Zaloguj się do systemu</h2>
+    <?php if ($error): ?> <p style="color:red;"><?= $error ?></p> <?php endif; ?>
+
+    <form method="POST">
+        <input type="text" name="username" placeholder="Login" required><br>
+        <input type="password" name="password" placeholder="Hasło" required><br>
+        <button type="submit">Zaloguj</button>
+    </form>
+</div>
+
 <?php include 'includes/footer.php'; ?>

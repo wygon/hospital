@@ -1,5 +1,7 @@
 <?php
-require_once __DIR__ . '/../helpers/functions.php';
+    require_once __DIR__ . '/../helpers/functions.php';
+    require_once __DIR__ . '/../helpers/constants.php';
+
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
@@ -8,14 +10,6 @@ require_once __DIR__ . '/../helpers/functions.php';
         [
             'link' => '/hospital/doctor/dashboard.php',
             'name' => 'Dashboard'
-        ],
-        [
-            'link' => '/hospital/doctor/add_details.php',
-            'name' => 'Add Details'
-        ],
-        [
-            'link' => '/hospital/doctor/add_prescription.php',
-            'name' => 'Add Prescription'
         ]
     ];
 
@@ -39,12 +33,13 @@ require_once __DIR__ . '/../helpers/functions.php';
         $activeVisit = '/hospital/visit/visit_start.php?destination=start';
     }
 
-
     if($role == 'doctor'){
         $hrefs = $doctorHrefs;
     } else if($role == 'patient'){
         $hrefs = $patientHrefs;
     };
+
+    setMessage($_POST['info'] ?? '');
 ?>
 
 <!DOCTYPE html>
@@ -92,3 +87,7 @@ require_once __DIR__ . '/../helpers/functions.php';
         </nav>
     </header>
     <main class="container-xxl">
+
+    <?php 
+    require_once __DIR__ . '/../includes/infoLine.php';
+    ?>

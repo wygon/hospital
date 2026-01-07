@@ -4,23 +4,11 @@ require_once '../classes/Database.php';
 
 validateCanSeePage('doctor');
 
-$visitId = $_SESSION['active_visitId'] ?? null;
+$visitId = $_SESSION['active_visitId'] ?? '';
 if (empty($visitId)) {
-    header("Location: /hospital/doctor/dashboard.php?error=novisit");
+    //header("Location: /hospital/doctor/dashboard.php?error=novisit");
+    postTo("/hospital/doctor/dashboard.php", [INFO => VISIT_NO_EXIST]);
     exit;
-}
-
-$info = $_GET['info'] ?? '';
-
-if (!empty($info)) {
-    if ($info == 'otherVisitIsActive') {
-        global $ERROR_INFO;
-        $ERROR_INFO = 'Desired visit cant be started because: Other visit is active. Close active visit to start next!';
-
-        $closeSessionLink = '<a href="/hospital/doctor/visit_close.php">Close active visit</a>';
-
-        $ERROR_INFO = $ERROR_INFO . $closeSessionLink;
-    }
 }
 
 $patiendDiseasesAdded = $_SESSION['temp_diseases'] ?? [];
@@ -88,8 +76,6 @@ if (isset($_POST['remove_disease_temp'])) {
     header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $visitId);
     exit;
 }
-
-include '../includes/infoLine.php';
 $db->closeConn();
 ?>
 <div class="row">
