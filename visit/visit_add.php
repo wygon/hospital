@@ -1,11 +1,11 @@
 <?php
     session_start();
     require_once '../helpers/functions.php';
-    require_once '../classes/Database.php';
+    require_once '../helpers/constants.php';
 
     validateCanSeePage('patient');
 
-    $db = new Database();
+    $connection = connectDB();
     $summary = $_POST['summary'] ?? '';
     $visit_date = $_POST['visit_date'] ?? '';
     $visit_time = $_POST['visit_time'] ?? '';
@@ -28,30 +28,32 @@
     $dateFrom = $dtFrom->format('Y-m-d H:i:s');
     $dateTo = $dtTo->format('Y-m-d H:i:s');
 
-    $doctorVisitIn30MinTime = $db->querySingle("
+    $doctorVisitIn30MinTime = querySingle($connection, "
 SELECT COUNT(*) as total FROM `visits` WHERE DoctorId = ? AND VisitDate BETWEEN ? AND ?",
     [$visit_doctor, $dateFrom, $dateTo]);
 
     if($doctorVisitIn30MinTime['total'] > 0){
-        header('Location: /hospital/visit/visit_edit.php?info=doctor_busy');
+        // header('Location: /hospital/visit/visit_edit.php?info=doctor_busy');
+        postTo("/hospital/visit/visit_edit.php", [INFO => DOCTOR_BUSY]);
         exit;
     }
 
     $visitId = $_SESSION['active_visitId'];
 
-    $visit = $db->querySingle("SELECT * FROM visits WHERE Id = ?", [$visitId]);
+    $visit = querySingle($connection, "SELECT * FROM visits WHERE Id = ?", [$visitId]);
 
     if(is_numeric($visitId) && $visitId > 0){
-        $db->execute("UPDATE `visits` SET
+        execute($connection, "UPDATE `visits` SET
     DoctorId = ?, VisitDate = ?, Summary = ?, Status = 'scheduled', PatientDescription = ?
     WHERE Id = $visitId;", [$visit_doctor, $sqlDateTime, $summary, $patient_description]);
     } else{
-        $db->execute("INSERT INTO `visits` (PatientId, DoctorId, VisitDate, Summary, PatientDescription) VALUES (?, ?, ?, ?, ?)",
+        execute($connection, "INSERT INTO `visits` (PatientId, DoctorId, VisitDate, Summary, PatientDescription) VALUES (?, ?, ?, ?, ?)",
         [$_SESSION['user_id'], $visit_doctor, $sqlDateTime, $summary, $patient_description]);
     }
 
     unset($_SESSION['active_visitId']);
-    $db->closeConn();
-    header('Location: /hospital/patient/dashboard.php?info=addedVisit');
+    closeConn($connection);
+
+    postTo("/hospital/dashboard.php", [INFO => VISIT_ADDED]);
     exit;
 ?>

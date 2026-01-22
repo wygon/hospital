@@ -1,23 +1,30 @@
 <?php
 include __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../helpers/functions.php';
-require_once __DIR__ . '/../classes/Database.php';
 
 validateCanSeePage('patient');
 
-$db = new Database();
+$connection = connectDB();
 
 $limit = $_GET['show'] ?? 5;
 
-$visits = $db->queryAll("SELECT DISTINCT V.Id as VisitId, V.VisitDate, V.Summary, V.Status, V.LongDescription, V.PatientDescription, D.Name as DoctorName, 
-D.Surname as DoctorSurname, S.Name as Specialization, P.Id as PrescriptionId, P.ReciptCode
+$visits = queryAll($connection, "SELECT DISTINCT 
+    V.Id as VisitId, 
+    V.VisitDate, 
+    V.Summary, 
+    V.Status, 
+    V.LongDescription, 
+    V.PatientDescription, 
+    D.Name as DoctorName, 
+    D.Surname as DoctorSurname, 
+    S.Name as Specialization, 
+    P.Id as PrescriptionId, 
+    P.ReciptCode
 FROM `visits` as V 
-JOIN `users` as D 
-JOIN `specializations` as S
-LEFT JOIN `prescriptions` as P
-ON D.Id = V.DoctorId AND S.Id = D.Specialization AND P.VisitId = V.Id
-WHERE PatientId = ?
-GROUP BY V.Id
+JOIN `users` as D ON D.Id = V.DoctorId
+JOIN `specializations` as S ON S.Id = D.Specialization
+LEFT JOIN `prescriptions` as P ON P.VisitId = V.Id
+WHERE V.PatientId = ?
 ORDER BY V.VisitDate DESC
 LIMIT ?;", [$_SESSION['user_id'], $limit]);
 
@@ -31,8 +38,7 @@ if ($info == 'positive_download') {
     $ERROR_INFO = 'Error existed while downloading prescription! Try again!';
 }
 
-include __DIR__ . '/../includes/infoLine.php';
-$db->closeConn();
+closeConn($connection);
 ?>
 <div class="row">
     <div class="d-flex  justify-content-center">

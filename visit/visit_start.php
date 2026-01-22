@@ -43,22 +43,6 @@ if ($visitId) {
         ];
     }
 
-    postTo($location,$postParams);
+    postTo($location, $postParams);
 }
 ?>
-<!-- 
-<form id="commit" method="POST" action=<?= $location ?>>
-    <input hidden name=<?= READONLY_W ?> value=<?= $see ?> />
-
-    <?php
-        if(isset($info)){
-            echo "<input hidden name='" . ID ."'  value='$visitExist' />";
-            echo "<input hidden name='" . INFO ."'  value='$info' />";
-        }
-    ?>
-
-</form>
-
-<script>
-    document.getElementById('commit').submit();
-</script> -->

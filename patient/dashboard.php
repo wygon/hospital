@@ -1,31 +1,24 @@
 <?php
 include __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../helpers/functions.php';
-require_once __DIR__ . '/../classes/Database.php';
 
 validateCanSeePage('patient');
 
-$db = new Database();
+$connection = connectDB();
 
-$visitTaken = $db->queryAll("SELECT V.Id, U.Name as DoctorName, U.Surname as DoctorSurname, V.VisitDate, v.Summary FROM `visits` as V
+$visitTaken = queryAll($connection, "SELECT V.Id, U.Name as DoctorName, U.Surname as DoctorSurname, V.VisitDate, v.Summary FROM `visits` as V
+Join users as UU on V.PatientId = UU.Id
 JOIN users as U on V.DoctorId = U.Id
-WHERE V.Status = 'completed'
-ORDER BY V.VisitDate DESC LIMIT 5;");
+WHERE V.Status = 'completed' AND UU.Id = ?
+ORDER BY V.VisitDate DESC LIMIT 5;", [$_SESSION[USER_ID]]);
 
-$visitScheduled = $db->queryAll("SELECT V.Id, U.Name as DoctorName, U.Surname as DoctorSurname, V.VisitDate, v.Summary FROM `visits` as V
+$visitScheduled = queryAll($connection, "SELECT V.Id, U.Name as DoctorName, U.Surname as DoctorSurname, V.VisitDate, v.Summary FROM `visits` as V
+Join users as UU on V.PatientId = UU.Id
 JOIN users as U on V.DoctorId = U.Id
-WHERE V.Status = 'scheduled'
-ORDER BY V.VisitDate DESC LIMIT 5;");
+WHERE V.Status = 'scheduled' AND UU.Id = ?
+ORDER BY V.VisitDate DESC LIMIT 5;", [$_SESSION[USER_ID]]);
 
-$info = $_GET['info'] ?? '';
-
-if ($info == 'addedVisit') {
-    global $SUCCESS_INFO;
-    $SUCCESS_INFO = 'Added visit positivly';
-}
-
-include __DIR__ . '/../includes/infoLine.php';
-$db->closeConn();
+closeConn($connection);
 ?>
 
 <h1>Welcome patient <?= htmlspecialchars($_SESSION['name'] . ' ' . $_SESSION['surname']) ?></h1>
@@ -54,7 +47,7 @@ $db->closeConn();
                                     <td><?= htmlspecialchars($row['DoctorName']) . ' ' .  htmlspecialchars($row['DoctorSurname']) ?></td>
                                     <td><?= htmlspecialchars($row['Summary']) ?></td>
                                     <td><?= htmlspecialchars($row['VisitDate']) ?></td>
-                                    <td><a href="/hospital/visit/visit_start.php?id=<?= $row['Id'] ?>&destination=edit&see=1">DETAILS</a></td>
+                                    <td><a href="/hospital/visit/visit_start.php?id=<?= htmlspecialchars($row['Id']) ?>&destination=edit&see=1">DETAILS</a></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -73,7 +66,7 @@ $db->closeConn();
                 <h5>My scheduled visits</h5>
             </div>
             <div class="card-body">
-                <?php if (!empty($visitTaken)): ?>
+                <?php if (!empty($visitScheduled)): ?>
                     <table class="table table-sm table-striped table-hover">
                         <thead>
                             <tr>

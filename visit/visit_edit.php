@@ -1,12 +1,10 @@
 <?php
 include __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../helpers/functions.php';
-require_once __DIR__ . '/../classes/Database.php';
 
 validateCanSeePage('patient');
 
-$db = new Database();
-
+$connection = connectDB();
 $desiredSpecialization = $_GET['specialization'] ?? -1;
 
 $visitId = $_SESSION['active_visitId'];
@@ -14,7 +12,7 @@ $info = $_GET['info'] ?? '';
 $seemode = $_GET['see'] ?? '';
 
 if ($visitId != -1) {
-    $visit = $db->querySingle("SELECT * FROM visits WHERE Id = ?", [$visitId]);
+    $visit = querySingle($connection, "SELECT * FROM visits WHERE Id = ?", [$visitId]);
     $visit['VisitOnlyDate'] = date('Y-m-d', strtotime($visit['VisitDate']));
     $visit['VisitTime'] = date('H:i', strtotime($visit['VisitDate']));
 
@@ -41,31 +39,25 @@ if ($visitId != -1) {
         'VisitOnlyDate' => '',
         'VisitTime' => '',
         'DoctorId' => -1,
+        'PatientDescription' => ''
     ];
 }
 
-$specializations = $db->queryAll("SELECT Id, Name FROM `specializations`;");
+$specializations = queryAll($connection, "SELECT Id, Name FROM `specializations`;");
 
 $doctorsQuery = "SELECT U.Id, U.Name, U.Surname, S.Name as Specialization FROM `users` as U
 JOIN specializations as S on U.Specialization = S.Id
 WHERE Role = 'doctor'";
+
 $doctorsQueryParameters = [];
 if($desiredSpecialization != -1){
     $doctorsQuery = $doctorsQuery . ' AND Specialization = ?';
     $doctorsQueryParameters = [$desiredSpecialization];
 }
 
-$doctors = $db->queryAll($doctorsQuery, $doctorsQueryParameters);
+$doctors = queryAll($connection, $doctorsQuery, $doctorsQueryParameters);
 
-global $ERROR_INFO;
-if ($info == 'otherVisitIsActive') {
-    $ERROR_INFO = 'You must submit active visit to start edit next';
-} else if($info == 'doctor_busy'){
-    $ERROR_INFO = 'Doctor is busy in this time. Choose other date!';
-}
-
-include '../includes/infoLine.php';
-$db->closeConn();
+closeConn($connection);
 ?>
 
 <div class="row">
@@ -75,7 +67,7 @@ $db->closeConn();
                 <div class="col-12 d-flex">
                     <span class="col-6 d-flex flex-column align-items-center justify-content-center">
                         <label for=summary>Summary</label>
-                        <input id=summary type=text name=summary maxlength="50" value=<?= $visit['Summary'] ?> />
+                        <input id=summary type=text name=summary maxlength="50" value=<?= $visit['Summary'] ?> ></input>
                     </span>
                     <span class="col-3 d-flex flex-column align-items-center justify-content-center">
                         <label for=visit_date>Visit date</label>
@@ -152,20 +144,31 @@ $db->closeConn();
     const urlParams = new URLSearchParams(window.location.search);
     const visitId = urlParams.get('id');
     const today = new Date().toISOString().split('T')[0];
-
     document.getElementById('visit_date').setAttribute('min', today);
     document.getElementById('visit_date').setAttribute('value', today);
-
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const currentTime = `${hours}:${minutes}`;
+ 
+    // const now = new Date();
+    // const hours = String(now.getHours()).padStart(2, '0');
+    // const minutes = String(now.getMinutes()).padStart(2, '0');
+    // const currentTime = `${hours}:${minutes}`;
+    
     const timeInput = document.getElementById('visit_time');
-
-    timeInput.setAttribute('min', currentTime);
-    if (visitId === "-1") {
-        timeInput.setAttribute('value', currentTime);
+    const dateInput = document.getElementById('visit_date');
+    function updateMinTime() {
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+        
+        if (dateInput.value === today) {
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const currentTime = `${hours}:${minutes}`;
+            timeInput.setAttribute('min', currentTime);
+        } else {
+            timeInput.removeAttribute('min');
+        }
     }
+    updateMinTime();
+    dateInput.addEventListener('change', updateMinTime);
 
     function validateForm() {
         const visitTime = document.getElementById('visit_time').value;

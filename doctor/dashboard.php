@@ -1,11 +1,10 @@
 <?php
-include __DIR__ . '/../includes/header.php';
+require __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../helpers/functions.php';
-require_once __DIR__ . '/../classes/Database.php';
 
 validateCanSeePage('doctor');
 
-$db = new Database();
+$connection = connectDB();
 
 $latestVisitQuery =
     "SELECT V.Id, V.Summary, V.VisitDate, V.Status, P.Name, P.Surname FROM `visits` AS V
@@ -17,8 +16,8 @@ $upcommingVisitQuery =
 JOIN users AS P on V.PatientId = P.Id 
 WHERE V.DoctorId = ? AND V.Status = 'scheduled' ORDER BY V.VisitDate LIMIT 5;";
 
-$latestVisit = $db->queryAll($latestVisitQuery, [$_SESSION['user_id']]);
-$upcommingVisit = $db->queryAll($upcommingVisitQuery, [$_SESSION['user_id']]);
+$latestVisit = queryAll($connection, $latestVisitQuery, [$_SESSION['user_id']]);
+$upcommingVisit = queryAll($connection, $upcommingVisitQuery, [$_SESSION['user_id']]);
 
 if (isset($_GET['info'])) {
     global $SUCCESS_INFO, $INFORMATION_INFO;
@@ -32,16 +31,14 @@ if (isset($_GET['info'])) {
     }
 }
 
-//include '../includes/infoLine.php';
-$db->closeConn();
+closeConn($connection);
 ?>
 
-<h1>Welcome doctor <?= htmlspecialchars($_SESSION['name'] . ' ' . $_SESSION['surname']) ?></h1>
-<div class="container">
+<div class="container-sm">
     <div class="row pb-2">
-        <div class="col-6">
+        <div class="col-lg-6 col-md-12">
             <h3>Latest visits</h3>
-            <table class="table table-sm" border="1">
+            <table class="table table-sm table-striped table-hover" border="1">
                 <thead>
                     <tr>
                         <th>id</th>
@@ -60,7 +57,7 @@ $db->closeConn();
                                 <td class=<?= getBgColorBasedOnStatus($row['Status']) ?>><?= htmlspecialchars($row['Status']) ?></td>
                                 <td><?= htmlspecialchars($row['Summary']) ?></td>
                                 <td><?= htmlspecialchars($row['VisitDate']) ?></td>
-                                <td><a href="/hospital/visit/visit_start.php?id=<?= $row['Id'] ?>&destination=start&see=1">DETAILS</a></td>
+                                <td><a href="/hospital/visit/visit_start.php?id=<?= $row['Id'] ?>&destination=start&see=1"><button class="btn btn-sm btn-secondary">DETAILS</button></a></td>
                             </tr>
                         <?php endforeach; ?>
                         <tr>
@@ -74,9 +71,9 @@ $db->closeConn();
                 </tbody>
             </table>
         </div>
-        <div class="col-6">
+        <div class="col-lg-6 col-md-12">
             <h3>Incomming visits</h3>
-            <table border="1">
+            <table class="table table-sm table-striped table-hover" border="1">
                 <thead>
                     <tr>
                         <th>Patient</th>
@@ -94,14 +91,14 @@ $db->closeConn();
                                 <td><?= htmlspecialchars($row['Summary']) ?></td>
                                 <td><?= htmlspecialchars($row['VisitDate']) ?></td>
                                 <td>
-                                    <button type="button" onclick=startVisit(<?= $row['Id'] ?>)>
+                                    <button class="btn btn-sm btn-secondary" onclick=startVisit(<?= $row['Id'] ?>)>
                                         Start visit
                                     </button>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                         <tr>
-                            <td colspan="5"><a href="visits.php?type=incomming?doctorId=<?= $_SESSION['user_id'] ?>">See all visits</a></td>
+                            <td colspan="5"><a href="visits.php?type=incomming?doctorId=<?= htmlspecialchars($_SESSION['user_id']) ?>">See all visits</a></td>
                         </tr>
                     <?php else: ?>
                         <tr>

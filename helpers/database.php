@@ -2,7 +2,7 @@
 function connectDB()
 {
     $conn = mysqli_connect(DB_HOST,  DB_USER, DB_PASS, DB_NAME);
-    if(!$conn)
+    if (!$conn)
         die("Connection failed");
 
     return $conn;
@@ -51,17 +51,17 @@ function execute($connection, $sql, $params = [])
     // return $result ? $result : $preparedQuery;
 }
 
-// Zamiast $this->conn->insert_id
+
 function lastInsertId($connection)
 {
     return mysqli_insert_id($connection);
 }
 
-// Zamiast $result->fetch_assoc()
+
 function querySingle($connection, $sql, $params = [])
 {
     $result = execute($connection, $sql, $params);
-    
+
     // Sprawdzamy, czy execute zwróciło obiekt wyniku (dla SELECT)
     if ($result instanceof mysqli_result) {
         $data = mysqli_fetch_assoc($result);
@@ -76,11 +76,11 @@ function querySingle($connection, $sql, $params = [])
 function queryAll($connection, $sql, $params = [])
 {
     $result = execute($connection, $sql, $params);
-    
+
     if ($result instanceof mysqli_result) {
         $data = mysqli_fetch_all($result, MYSQLI_ASSOC);
         mysqli_free_result($result);
-        
+
         return $data;
     }
     return [];
@@ -91,4 +91,14 @@ function closeConn($connection)
 {
     return mysqli_close($connection);
 }
-?>
+
+function getCountOfRecords($connection, $tableAndwhere, $params = []){
+    $result = querySingle($connection, 'SELECT Count(*) FROM ' . $tableAndwhere, $params);
+    
+    if ($result) {
+        return (int) reset($result);
+    }
+    
+    return 0;
+}
+

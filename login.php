@@ -1,12 +1,20 @@
 <?php
-include 'includes/header.php';
+require 'includes/header.php';
+require_once 'helpers/functions.php';
+require_once 'helpers/constants.php';
 
 $error = '';
 $receivedError = $_GET['from'] ?? '';
 
-if (!empty($receivedError)) {
-    if ($receivedError == 'invalidLogin')
-        $error = "You can't go into this area.";
+if (isset($_GET['from']) && $_GET['from'] == 'invalidLogin') {
+    $error = "You can't go into this area. Please login first.";
+}
+
+
+if (isset($_POST[INFO])) {
+    if ($_POST[INFO] === WRONG_LOGIN_OR_PASSWORD) {
+        $error = "Invalid username or password.";
+    }
 }
 
 function login($username, $password)
@@ -17,24 +25,22 @@ function login($username, $password)
 
     $result = execute($connection, $sql, [$username]);
 
-    if ($result->num_rows === 1) {
-        $user = $result->fetch_assoc();
+    $user = null;
+    if ($result && $result->num_rows === 1) {
+        $dbUser = $result->fetch_assoc();
 
-        if ($user['Password'] == $password) {
-            return $user;
+        if (password_verify($password, $dbUser['Password'])) {
+            $user = $dbUser;
         }
-        // if (password_verify($password, $user['Password'])) {
-        //     return $user; // Zwracamy dane użytkownika
-        // }
     }
 
     closeConn($connection);
-    return false;
+    return $user ?? false;
 }
 
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST[INFO])) {
+    
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
 
@@ -42,32 +48,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($userData) {
         $_SESSION['user_id'] = $userData['Id'];
-        $_SESSION['role']    = $userData['Role'];
-        $_SESSION['name']    = $userData['Name'];
+        $_SESSION['role'] = $userData['Role'];
+        $_SESSION['name'] = $userData['Name'];
         $_SESSION['surname'] = $userData['Surname'];
 
         $_SESSION[USER_FULLNAME] = $_SESSION['name'] . ' ' . $_SESSION['surname'];
 
         header("Location: dashboard.php");
-
         exit;
     } else {
-        $error = "Niepoprawny login lub hasło!";
+        //postTo($_SERVER['PHP_SELF'], [INFO => WRONG_LOGIN_OR_PASSWORD]);
+        $error = "Wrong login or password!";
     }
-    $db->closeConn();
 }
 
 ?>
 
-<div class="login-container">
-    <h2>Zaloguj się do systemu</h2>
-    <?php if ($error): ?> <p style="color:red;"><?= $error ?></p> <?php endif; ?>
+<div class="container d-flex flex-column align-items-center justify-items-center">
+    <h2>Login to system</h2>
 
-    <form method="POST">
-        <input type="text" name="username" placeholder="Login" required><br>
-        <input type="password" name="password" placeholder="Hasło" required><br>
-        <button type="submit">Zaloguj</button>
+    <?php if ($error): ?>
+        <div class="alert alert-danger w-50 text-center"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
+
+    <form method="POST" id="loginForm" class="w-50">
+        <div class="mb-3">
+            <input type="text" name="username" class="form-control" placeholder="Login" required value=<?= $_GET['username'] ?? '' ?>>
+        </div>
+        <div class="mb-3">
+            <input type="password" name="password" class="form-control" placeholder="Password" required>
+        </div>
+        
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-secondary">Login</button>
+            <a href="register.php" class="btn btn-outline-secondary">Register</a>
+        </div>
     </form>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php require 'includes/footer.php'; ?>

@@ -1,41 +1,48 @@
 <?php
-include "../includes/header.php";
-require_once '../classes/Database.php';
+require "../includes/header.php";
 
 $visitId = $_SESSION['active_visitId'] ?? null;
 
-if(empty($visitId)){
-    header('Location: /hospital/doctor/dashboard.php');
+if (empty($visitId)) {
+    postTo('Location: /hospital/doctor/dashboard.php', [INFO => VISIT_NO_EXIST]);
     exit;
 }
 
-$db = new Database();
+$connection = connectDB();
 
-$medicineKeyValue = $db->queryAll("SELECT Id, Name, DosageForm FROM `medicines`");
+$medicineKeyValue = queryAll($connection, "SELECT Id, Name, DosageForm FROM `medicines`");
 
-$result = $db->querySingle("SELECT Id FROM `prescriptions` ORDER BY Id DESC LIMIT 1") ?? 0;
-if($result){
-    $latestPrescriptionId = (int)$result;
-}else{
+// $result = querySingle($connection, "SELECT Count(*) FROM `prescriptions` ORDER BY Id DESC LIMIT 1") ?? 0;
+$result = getCountOfRecords($connection, "`prescriptions` ORDER BY Id DESC LIMIT 1");
+if ($result) {
+    $latestPrescriptionId = $result;
+} else {
     $latestPrescriptionId = 1;
 }
 
-$doctor = $db->querySingle("SELECT Name, Surname, Specialization FROM `users` WHERE Id = ?",
- [$_SESSION['user_id']]);
+$doctor = querySingle(
+    $connection,
+    "SELECT Name, Surname, Specialization FROM `users` WHERE Id = ?",
+    [$_SESSION['user_id']]
+);
 
-$visit = $db->querySingle("SELECT PatientId FROM `visits` WHERE Id = ?", [$visitId]);
+$visit = querySingle($connection, "SELECT PatientId FROM `visits` WHERE Id = ?", [$visitId]);
 
-$patient = $db->querySingle("SELECT Name, Surname, Pesel FROM `users` Where Id = ?", [$visit['PatientId']]);
+$patient = querySingle($connection, "SELECT Name, Surname, Pesel FROM `users` Where Id = ?", [$visit['PatientId']]);
 
-$prescription = $db->querySingle("SELECT Id FROM `prescriptions` WHERE VisitId = ? ",
-[$visitId]);
+$prescription = querySingle(
+    $connection,
+    "SELECT Id FROM `prescriptions` WHERE VisitId = ? ",
+    [$visitId]
+);
+if ($prescription != null) {
+    $medicines = queryAll($connection, "SELECT P.IssueDate, P.ReciptCode, PI.Instructions, PI.Quantity, M.Id as MedicineId, M.Name, M.DosageForm FROM prescriptions AS P
+    LEFT JOIN prescriptionitems as PI on P.Id = PI.PrescriptionId
+    LEFT JOIN medicines as M on M.Id = PI.MedicineId
+    WHERE P.Id = ?;", [$prescription['Id']]);
+}
 
-$medicines = $db->queryAll("SELECT P.IssueDate, P.ReciptCode, PI.Instructions, PI.Quantity, M.Id as MedicineId, M.Name, M.DosageForm FROM prescriptions AS P
-LEFT JOIN prescriptionitems as PI on P.Id = PI.PrescriptionId
-LEFT JOIN medicines as M on M.Id = PI.MedicineId
-WHERE P.Id = ?;", [$prescription['Id']]);
-
-if(!isset($_SESSION['temp_medicines'])){
+if (!isset($_SESSION['temp_medicines'])) {
     if (!empty($medicines)) {
         foreach ($medicines as $m) {
             $_SESSION['temp_medicines'][] = [
@@ -62,9 +69,8 @@ if (isset($_POST['add_medicine_temp'])) {
                 break;
             }
         }
-        foreach($_SESSION['temp_medicines'] as &$m)
-        {
-            if($m['Id'] == $medicineId){
+        foreach ($_SESSION['temp_medicines'] as &$m) {
+            if ($m['Id'] == $medicineId) {
                 $quantityAdded = true;
                 $m['Quantity'] += $quantity;
                 $m['Instructions'] = $instruction;
@@ -72,7 +78,7 @@ if (isset($_POST['add_medicine_temp'])) {
             }
         }
         unset($m);
-        if(!isset($quantityAdded)){
+        if (!isset($quantityAdded)) {
             $_SESSION['temp_medicines'][] = [
                 'Id' => $medicineId,
                 'Name' => $medicineName,
@@ -86,13 +92,14 @@ if (isset($_POST['add_medicine_temp'])) {
     }
 }
 
-removeFromTempList('remove_medicine_temp',
-        'temp_medicines',
-        'Succesfully removed item from prescription.',
-        $_SERVER['PHP_SELF'] . "?id=" . $visitId);
+removeFromTempList(
+    'remove_medicine_temp',
+    'temp_medicines',
+    'Succesfully removed item from prescription.',
+    $_SERVER['PHP_SELF'] . "?id=" . $visitId
+);
 
-    include "../includes/infoLine.php";
-    $db->closeConn();
+closeConn($connection);
 ?>
 <div class="row">
     <div class="card card-sm col-5">
@@ -130,7 +137,7 @@ removeFromTempList('remove_medicine_temp',
                         </div>
                     </div>
                 </div>
-                    
+
                 <div class="d-flex justify-content-end mt-3">
                     <button class="btn btn-sm btn-secondary px-4" type=sumbit name='add_medicine_temp'>Add</button>
                 </div>
@@ -147,8 +154,8 @@ removeFromTempList('remove_medicine_temp',
             </div>
             <div class="card-body pb-0">
                 <div class="d-flex flex-column" style="font-size: small;">
-                    <span><?= $patient['Name'] . ' ' . $patient['Surname'] ?></span>
-                    <span>Pesel: <?= $patient['Pesel'] ?></span>
+                    <span><?= htmlspecialchars($patient['Name']) . ' ' . htmlspecialchars($patient['Surname']) ?></span>
+                    <span>Pesel: <?= htmlspecialchars($patient['Pesel']) ?></span>
                 </div>
             </div>
             <div class="card-body pt-0">
@@ -161,12 +168,14 @@ removeFromTempList('remove_medicine_temp',
                                     <td class="lh-1" style="font-size: small;"><?= htmlspecialchars($row['Name']) ?></td>
                                     <td class="lh-1" style="font-size: small;"><?= htmlspecialchars($row['Instructions']) ?></td>
                                     <td class="lh-1" style="font-size: small;"><?= htmlspecialchars($row['Quantity']) ?> szt</td>
-                                    
-                                    <form method=post action=''><td>
-                                        <button type="submit" name="remove_medicine_temp[<?= $row['Id'] ?>]" class="btn btn-outline-danger btn-sm px-2 py-0">
-                                        <i class="bi bi-x-lg"></i>
-                                        </button>
-                                    </td></form>
+
+                                    <form method=post action=''>
+                                        <td>
+                                            <button type="submit" name="remove_medicine_temp[<?= $row['Id'] ?>]" class="btn btn-outline-danger btn-sm px-2 py-0">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </td>
+                                    </form>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?> </tbody>
@@ -174,9 +183,9 @@ removeFromTempList('remove_medicine_temp',
                 </table>
             </div>
             <div class="card-footer p-0 pe-2 fst-italic d-flex flex-column align-items-end">
-                <span>Doctor: <?= $doctor['Name'] . ' ' . $doctor['Surname'] ?></span>
-                <span><?= $doctor['Specialization'] ?></span>
-                <span style="font-size: small;" ><?= date("Y-m-d H:i:s") ?></span>
+                <span>Doctor: <?= htmlspecialchars($doctor['Name']) . ' ' . htmlspecialchars($doctor['Surname']) ?></span>
+                <span><?= htmlspecialchars($doctor['Specialization']) ?></span>
+                <span style="font-size: small;"><?= date("Y-m-d H:i:s") ?></span>
             </div>
         </div>
     </div>

@@ -3,10 +3,10 @@
 
     if($_SESSION['role'] == 'doctor')
     {
-        include 'doctor/dashboard.php';   
+        require 'doctor/dashboard.php';   
     }
     else if($_SESSION['role'] == 'patient')
     {
-        include 'patient/dashboard.php';   
+        require 'patient/dashboard.php';   
     }
 ?>

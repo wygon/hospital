@@ -1,8 +1,10 @@
 <?php 
-    require_once '../classes/Database.php';
+    require_once '../helpers/functions.php';
+    require_once '../helpers/constants.php';
     session_start();
 
     if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+        postTo("/hospital/");
         exit;
     }
     $pId = $_POST['patient_id'];
@@ -14,10 +16,10 @@
     $pHeight = $_POST['patient-height'];
     $pWeight = $_POST['patient-weight'];
     
-    $db = new Database();
+    $connection = connectDB();
 
     //user
-    $db->execute("UPDATE users SET Height = ?, Weight = ? WHERE Id = ?", [$pHeight, $pWeight, $pId]);
+    execute($connection, "UPDATE users SET Height = ?, Weight = ? WHERE Id = ?", [$pHeight, $pWeight, $pId]);
 
     $currentDate = date("Y-m-d H:i:s");
     
@@ -25,7 +27,7 @@
     if(!empty($_SESSION["temp_diseases"]))
         {
         foreach($_SESSION["temp_diseases"] as $disease){
-                $db->execute("INSERT INTO patientdiagnoses 
+                execute($connection, "INSERT INTO patientdiagnoses 
         (PatientId, DiseaseId, VisitId, DiagnosisDate, Description) VALUES (?,?,?,?,?);",
             [$pId, $disease["Id"], $vId, $currentDate, $disease["Description"]]);
         }
@@ -34,10 +36,11 @@
     }
     
     //visit
-    $db->execute("UPDATE visits SET VisitDate = ?, Summary= ?, Status = ?, LongDescription = ? WHERE Id = ?",
+    execute($connection, "UPDATE visits SET VisitDate = ?, Summary= ?, Status = ?, LongDescription = ? WHERE Id = ?",
     [$currentDate, $visitDesc, 'completed', $visitLongDesc, $vId]);
 
-    $db->closeConn();
-    header("Location: /hospital/doctor/visit_close.php");
+    closeConn($connection);
+    // header("Location: /hospital/visit/visit_close.php");
+    postTo("/hospital/visit/visit_close.php", [INFO => VISIT_CLOSE]);
     exit;
 ?>

@@ -1,7 +1,7 @@
 <?php 
 session_start();
 require_once __DIR__ . '/../helpers/functions.php';
-require_once __DIR__ . '/../classes/Database.php';
+require_once __DIR__ . '/../helpers/constants.php';
 
 validateCanSeePage('patient');
 
@@ -13,25 +13,26 @@ if(!$prescriptionId)
     exit;
 }
 
-$db = new Database();
+$connection = connectDB();
 
-$prescription = $db->querySingle("SELECT VisitId, IssueDate, ReciptCode from `prescriptions` WHERE Id = ?", [$prescriptionId]);
+$prescription = querySingle($connection, "SELECT VisitId, IssueDate, ReciptCode from `prescriptions` WHERE Id = ?", [$prescriptionId]);
 
-$prescriptionitems = $db->queryALL("SELECT M.Name as MedicineName, M.DosageForm, M.ActiveSubstance, PI.Quantity, PI.Instructions
+$prescriptionitems = queryALL($connection, "SELECT M.Name as MedicineName, M.DosageForm, M.ActiveSubstance, PI.Quantity, PI.Instructions
 FROM `prescriptionitems` as PI
 JOIN `medicines` as M
 ON M.Id = PI.MedicineId
 WHERE PI.PrescriptionId = ?;",
 [$prescriptionId]);
 
-$visit = $db->querySingle("SELECT DoctorId, PatientId FROM `visits` WHERE Id = ?", [$prescription['VisitId']]);
+$visit = querySingle($connection, "SELECT DoctorId, PatientId FROM `visits` WHERE Id = ?", [$prescription['VisitId']]);
 
-$doctor = $db->querySingle("SELECT '' as Doctor, D.Name, D.Surname, S.Name as Specialization from `users` as D
+$doctor = querySingle($connection, "SELECT '' as Doctor, D.Name, D.Surname, S.Name as Specialization from `users` as D
 JOIN `specializations` as S on D.Specialization = S.Id
 WHERE D.Id =  ?",[$visit['DoctorId']]);
 $doctor['Doctor'] = 'Doctor:';
 
-$patient =  $db->querySingle("SELECT '' as Patient, Name, Surname, Pesel FROM `users` WHERE Id = ?", [$_SESSION['user_id']]);
+$patient = querySingle($connection, "SELECT '' as Patient, Name, Surname, Pesel FROM `users` WHERE Id = ?", [$_SESSION['user_id']]);
+closeConn($connection);
 $patient['Patient'] = 'Patient:';
 
 header('Content-Type: text/csv; charset=utf-8');
@@ -69,5 +70,4 @@ fputcsv($output, [], ';');
 fputcsv($output, ['','','','','','Print date:', date('Y.m.d')], ';');
 
 fclose($output);
-$db->closeConn();
 ?>

@@ -26,9 +26,18 @@ define('INFO', 'info');
 //errors
 define('OTHER_SESION_ACTIVE', 'otherVisitIsActive');
 define('VISIT_NO_EXIST', 'novisit');
+define('DOCTOR_BUSY', 'doctor_busy');
+define('ERROR_DOWNLOAD', 'error_download');
+define('NOT_LOGGED_IN', 'not_logged_in');
+define('WRONG_LOGIN_OR_PASSWORD', 'WRONG_LOGIN_OR_PASSWORD');
+define('ENTERED_WRONG_DATA', 'entered_wrong_data');
+define('DOCTOR_MUST_SPECIFY_SPECIALIZATION', 'DOCTOR_MUST_SPECIFY_SPECIALIZATION');
 
 //success
 define('VISIT_CLOSE', 'visit_close');
+define('VISIT_ADDED', 'visit_added');
+define('POSITIVE_DOWNLOAD', 'positive_download');
+
 //INFO
 define('LOGGED_IN', 'logged_in');
 
