@@ -7,17 +7,28 @@ require_once __DIR__ . '/helpers/database.php';
 
 $error = '';
 
+$conn = connectDB();
+
+$query = "SELECT Id, Name FROM `specializations`";
+
+$specializations = queryAll($conn, $query);
+
+closeConn($conn);
+
 function register($name, $surname, $username, $password, $role, $specialization, $pesel)
 {
     $connection = connectDB();
 
     $userExist = getCountOfRecords($connection, "`users` WHERE Username = ?", [$username]);
 
-    if($userExist){
+    if ($userExist) {
         $error = 'User already exist';
         return false;
     }
 
+    if($role === 'patient'){
+        $specialization = null;
+    }
 
     $sql = "INSERT INTO users (Name, Surname, Username, Password, Role, Specialization, Pesel, Height, Weight)
          VALUES (?,?,?,?,?,?,?, 0, 0)";
@@ -39,28 +50,46 @@ if (
 
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
+    $confirmpassword = $_POST['confirmpassword'] ?? '';
     $name = $_POST['name'] ?? '';
     $surname = $_POST['surname'] ?? '';
     $role = $_POST['role'] ?? '';
     $specialization = $_POST['specialization'] ?? null;
     $pesel = $_POST['pesel'] ?? null;
 
-    if (!validateFormItems($name, $surname, $username, $password, $role, $pesel)) {
+
+    if (!validateFormItems($name, $surname, $username, $password, $confirmpassword, $role, $pesel)) {
         postTo('', [INFO => ENTERED_WRONG_DATA]);
         exit;
     } else {
         $errors = '';
+
+        if($confirmpassword != $password){
+            $errors .= "Passwords are not the same.";
+        }
         if (strlen($username) < 5) {
+            if(strlen($errors) > 3)
+                $errors .= "<br/>";
+
             $errors .= "Username lenght must be longer than 5";
         }
         if (strlen($password) < 5) {
-            $errors .= "<br/>Password length must be longer than 5";
+            if(strlen($errors) > 3)
+                $errors .= "<br/>";
+            
+            $errors .= "Password length must be longer than 5";
         }
-        if (strlen($name) < 5) {
-            $errors .= "<br/>Name lenght must be longer than 5";
+        if (strlen($name) < 2) {
+            if(strlen($errors) > 3)
+                $errors .= "<br/>";
+            
+            $errors .= "Name lenght must be longer than 2";
         }
-        if (strlen($surname) < 5) {
-            $errors .= "<br/>Surname lenght must be longer than 5";
+        if (strlen($surname) < 2) {
+            if(strlen($errors) > 3)
+                $errors .= "<br/>";
+            
+            $errors .= "Surname lenght must be longer than 2";
         }
     }
 
@@ -79,20 +108,19 @@ if (
             //header("Location: /hospital/dashboard.php");
             exit;
         } else {
-            if(strlen($error) <  5)
+            if (strlen($error) <  5)
                 $error = "Registration failed. Username might be taken.";
         }
     } else {
         $error = $errors;
     }
 }
-
 ?>
 
 <div class="container mt-5">
     <h2>Register New Account</h2>
-    <?php if ($error): ?> 
-        <div class="alert alert-danger"><?= $error ?></div> 
+    <?php if ($error): ?>
+        <div class="alert alert-danger"><?= $error ?></div>
     <?php endif; ?>
 
     <form method="POST">
@@ -114,6 +142,10 @@ if (
                 <td><input id='password' type="password" name="password" class="form-control" required value=<?= $_POST['password'] ?? '' ?>></td>
             </tr>
             <tr>
+                <td><label for="confirmpassword">Confirm password:</label></td>
+                <td><input id='confirmpassword' type="password" name="confirmpassword" class="form-control" required value=<?= $_POST['confirmpassword'] ?? '' ?>></td>
+            </tr>
+            <tr>
                 <td><label for="pesel">Pesel:</label></td>
                 <td><input id='pesel' type="pesel" name="pesel" class="form-control" required value=<?= $_POST['pesel'] ?? '' ?>></td>
             </tr>
@@ -128,7 +160,14 @@ if (
             </tr>
             <tr id="specializationRow" style="display: none;">
                 <td><label for="specialization">Specialization:</label></td>
-                <td><input id="specialization" type="text" name="specialization" class="form-control" value=<?= $_POST['specialization'] ?? '' ?>></td>
+                <td>
+                    <select id="specialization" name="specialization" class="form-select" required value=<?= $_POST['specialization'] ?? '' ?>>
+                        <?php foreach ($specializations as $s): ?>
+                            <option value=<?= $s['Id'] ?>><?= $s['Name'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
+                <!-- <td><input id="specialization" type="text" name="specialization" class="form-control" value=<?= $_POST['specialization'] ?? '' ?>></td> -->
             </tr>
         </table>
         <button type="submit" class="btn btn-secondary">Create Account</button>

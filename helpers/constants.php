@@ -1,9 +1,24 @@
 <?php
 //DB_DATA
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'hospital');
+
+$settingsPath = __DIR__ . '/../appsettings.cfg';
+
+if (file_exists($settingsPath)) {
+    $lines = file($settingsPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        // Rozdziel klucz=wartość
+        list($name, $value) = explode('=', $line, 2);
+
+        if (!defined($name)) {
+            define($name, $value);
+        }
+    }
+}
+
+// define('DB_HOST', 'localhost');
+// define('DB_USER', 'root');
+// define('DB_PASS', '');
+// define('DB_NAME', 'hospital');
 
 //SESSION_KEYS
 define('USER_ID', 'user_id');

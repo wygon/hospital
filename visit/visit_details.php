@@ -16,7 +16,7 @@ $connection = connectDB();
 
 $patientVisitHistory = [];
 
-$visitData = querySingle($connection, 'SELECT Id, PatientId, VisitDate, Summary, Status, LongDescription  FROM `visits` WHERE Id = ?', [$visitId]);
+$visitData = querySingle($connection, 'SELECT Id, PatientId, VisitDate, PatientDescription, Summary, Status, LongDescription  FROM `visits` WHERE Id = ?', [$visitId]);
 $patientData = querySingle($connection, 'SELECT Id, Name, Surname, Height, Weight FROM `users` WHERE Id = ?', [$visitData['PatientId']]);
 $patientVisitHistoryQuery = "SELECT Id, Summary, VisitDate, PatientDescription, LongDescription FROM `visits` WHERE PatientId = ? ORDER BY VisitDate LIMIT 5;";
 $patientVisitHistory = queryAll($connection, $patientVisitHistoryQuery, [$patientData['Id']]);
@@ -88,6 +88,8 @@ if (isset($_POST['remove_disease_temp'])) {
                     <input type="hidden" name="visit_id" value="<?= $visitId ?>">
                     <label for="visit-description">Summary</label></td> </br>
                     <input class="form-control w-100" id="visit-description" type=text name=visit-description value=<?= $visitData["Summary"] ?>> </br>
+                    <label>Patient description:</label>
+                    <i><?=$visitData["PatientDescription"] ?></i> 
                     <label for="visit-longDescription">Description:</label></br>
                     <textarea class="form-control w-100" id="visit-longDescription" name="visit-longDescription" rows="5" cols="40" placeholder="Write patient symptomps..."><?= $visitData['LongDescription'] ?></textarea>
                     <p>Update patient info</p>

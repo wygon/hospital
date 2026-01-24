@@ -5,9 +5,18 @@ require_once __DIR__ . '/../helpers/constants.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-// require_once "bringToLogin.php"; // TODO
-    
-    $doctorHrefs = [
+
+if (isset($_GET['theme'])) {
+    $theme = $_GET['theme'] === 'dark' ? 'dark' : 'light';
+    setcookie('user_theme', $theme, time() + (86400 * 30), "/");
+
+    header("Location: " . strtok($_SERVER["REQUEST_URI"], '?'));
+    exit;
+}
+
+$currentTheme = $_COOKIE['user_theme'] ?? 'light';
+
+$doctorHrefs = [
     [
         'link' => '/hospital/doctor/dashboard.php',
         'name' => 'Dashboard'
@@ -55,18 +64,25 @@ setMessage($_POST['info'] ?? '');
     <link rel="stylesheet" href="/hospital/assets/css/style-main.css">
 </head>
 
-<body class="container-xxl">
+<body class="container-xxl <?= $currentTheme === 'dark' ? 'bg-dark text-white' : '' ?>">
     <header>
         <nav class="navbar">
             <div class="navbar-brand">
                 <h4>Hospital SW</h4>
             </div>
-            <?php if(isset($_SESSION[USER_ID])):?>
+            <?php if (isset($_SESSION[USER_ID])): ?>
                 <div>
                     <span>Welcome <?= htmlspecialchars($_SESSION['name'] . ' ' . $_SESSION['surname']) ?></span>
                 </div>
             <?php endif; ?>
             <ul class="navbar-nav d-flex align-items d-flex flex-row">
+                <li class="nav-item p-3">
+                    <?php if ($currentTheme === 'light'): ?>
+                        <a class="nav-link" href="?theme=dark"><i class="bi bi-moon-fill"></i> Dark Mode</a>
+                    <?php else: ?>
+                        <a class="nav-link" href="?theme=light"><i class="bi bi-sun-fill"></i> Light Mode</a>
+                    <?php endif; ?>
+                </li>
                 <?php if (isset($activeVisit)): ?>
                     <li class="nav-item p-3">
                         <a class="nav-link text-decoration-none" href=<?= $activeVisit ?>>ℹ Active visit</a>
@@ -95,6 +111,6 @@ setMessage($_POST['info'] ?? '');
     </header>
     <main class="container-xxl">
 
-<?php
-require_once __DIR__ . '/../includes/infoLine.php';
-?>
+        <?php
+        require_once __DIR__ . '/../includes/infoLine.php';
+        ?>

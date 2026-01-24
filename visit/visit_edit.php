@@ -105,9 +105,9 @@ closeConn($connection);
             <div class="d-flex justify-content-end">
                 <?php if(empty($seemode)):?>
                     <button class="btn btn-secondary m-3" type="submit" form=visit_add_form>Submit</button>
-                    <a href='visit_close.php'><button class="btn btn-secondary m-3" type="button">Cancel</button></a>
+                    <a href='visit_close.php?from=cancel'><button class="btn btn-secondary m-3" type="button">Cancel</button></a>
                 <?php else: ?>
-                    <a href='visit_close.php'><button class="btn btn-secondary m-3" type="button">Close</button></a>
+                    <a href='visit_close.php?from=cancel'><button class="btn btn-secondary m-3" type="button">Close</button></a>
                 <?php endif; ?>
             </div>
         </div>

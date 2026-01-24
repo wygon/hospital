@@ -60,9 +60,6 @@ closeConn($connection);
                                 <td><a href="/hospital/visit/visit_start.php?id=<?= $row['Id'] ?>&destination=start&see=1"><button class="btn btn-sm btn-secondary">DETAILS</button></a></td>
                             </tr>
                         <?php endforeach; ?>
-                        <tr>
-                            <td colspan="5"><a href="visits.php?type=ended?doctorId=<?= $_SESSION['user_id'] ?>">See all visits</a></td>
-                        </tr>
                     <?php else: ?>
                         <tr>
                             <td colspan="5">There is not visit to show.</td>
@@ -97,9 +94,6 @@ closeConn($connection);
                                 </td>
                             </tr>
                         <?php endforeach; ?>
-                        <tr>
-                            <td colspan="5"><a href="visits.php?type=incomming?doctorId=<?= htmlspecialchars($_SESSION['user_id']) ?>">See all visits</a></td>
-                        </tr>
                     <?php else: ?>
                         <tr>
                             <td colspan="14">There is not visit to show.</td>

@@ -5,6 +5,11 @@
 
     unset($_SESSION['active_visitId']);
     
+    if($_GET['from'] === 'cancel'){
+        postTo("/hospital/dashboard.php");
+        exit;
+    }
+
     postTo("/hospital/dashboard.php", [INFO => VISIT_CLOSE]);
     exit;
 ?>

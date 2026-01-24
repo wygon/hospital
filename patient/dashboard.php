@@ -20,91 +20,81 @@ ORDER BY V.VisitDate DESC LIMIT 5;", [$_SESSION[USER_ID]]);
 
 closeConn($connection);
 ?>
-
-<h1>Welcome patient <?= htmlspecialchars($_SESSION['name'] . ' ' . $_SESSION['surname']) ?></h1>
-
-<div class="row">
-    <div class="col-6">
-        <div class="card">
-            <div class="card-title">
-                <h5>My taken visits</h5>
-            </div>
-            <div class="card-body">
-                <?php if (!empty($visitTaken)): ?>
-                    <table class="table table-sm table-striped table-hover">
-                        <thead>
+<div class="container-sm">
+    <div class="row pb-2">
+        <div class="col-lg-6 col-md-12">
+            <h5>My taken visits</h5>
+            <?php if (!empty($visitTaken)): ?>
+                <table class="table table-sm table-striped table-hover" border="1">
+                    <thead>
+                        <tr>
+                            <td>Id</td>
+                            <td>Doctor</td>
+                            <td>Description</td>
+                            <td>Visit date</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($visitTaken as $row): ?>
                             <tr>
-                                <td>Id</td>
-                                <td>Doctor</td>
-                                <td>Description</td>
-                                <td>Visit date</td>
+                                <td><?= htmlspecialchars($row['Id']) ?></td>
+                                <td><?= htmlspecialchars($row['DoctorName']) . ' ' .  htmlspecialchars($row['DoctorSurname']) ?></td>
+                                <td><?= htmlspecialchars($row['Summary']) ?></td>
+                                <td><?= htmlspecialchars($row['VisitDate']) ?></td>
+                                <td><a href="/hospital/visit/visit_start.php?id=<?= htmlspecialchars($row['Id']) ?>&destination=edit&see=1">DETAILS</a></td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($visitTaken as $row): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($row['Id']) ?></td>
-                                    <td><?= htmlspecialchars($row['DoctorName']) . ' ' .  htmlspecialchars($row['DoctorSurname']) ?></td>
-                                    <td><?= htmlspecialchars($row['Summary']) ?></td>
-                                    <td><?= htmlspecialchars($row['VisitDate']) ?></td>
-                                    <td><a href="/hospital/visit/visit_start.php?id=<?= htmlspecialchars($row['Id']) ?>&destination=edit&see=1">DETAILS</a></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                        <?php endforeach; ?>
 
-                <?php else: ?>
-                    <p>Nothing to show</p>
-                <?php endif; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="5">Nothing to show</td>
+                        </tr>
+                    <?php endif; ?>
 
-            </div>
+                    </tbody>
+                </table>
         </div>
-    </div>
-    <div class="col-6">
-        <div class="card">
-            <div class="card-title">
-                <h5>My scheduled visits</h5>
-            </div>
-            <div class="card-body">
-                <?php if (!empty($visitScheduled)): ?>
-                    <table class="table table-sm table-striped table-hover">
-                        <thead>
+        <div class="col-lg-6 col-md-12">
+            <h5>My scheduled visits</h5>
+            <?php if (!empty($visitScheduled)): ?>
+                <table class="table table-sm table-striped table-hover" border="1">
+                    <thead>
+                        <tr>
+                            <td>Id</td>
+                            <td>Doctor</td>
+                            <td>Description</td>
+                            <td>Visit date</td>
+                            <td></td>
+                            <td>Cancel</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($visitScheduled as $row): ?>
                             <tr>
-                                <td>Id</td>
-                                <td>Doctor</td>
-                                <td>Description</td>
-                                <td>Visit date</td>
-                                <td></td>
-                                <td>Cancel</td>
+                                <td><?= htmlspecialchars($row['Id']) ?></td>
+                                <td><?= htmlspecialchars($row['DoctorName']) . ' ' .  htmlspecialchars($row['DoctorSurname']) ?></td>
+                                <td><?= htmlspecialchars($row['Summary']) ?></td>
+                                <td><?= htmlspecialchars($row['VisitDate']) ?></td>
+                                <td><a href="/hospital/visit/visit_start.php?id=<?= $row['Id'] ?>&destination=edit">DETAILS</a></td>
+                                <td class="text-center">
+                                    <a href="/hospital/visit/visit_cancel.php?id=<?= $row['Id'] ?>">
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </a>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($visitScheduled as $row): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($row['Id']) ?></td>
-                                    <td><?= htmlspecialchars($row['DoctorName']) . ' ' .  htmlspecialchars($row['DoctorSurname']) ?></td>
-                                    <td><?= htmlspecialchars($row['Summary']) ?></td>
-                                    <td><?= htmlspecialchars($row['VisitDate']) ?></td>
-                                    <td><a href="/hospital/visit/visit_start.php?id=<?= $row['Id'] ?>&destination=edit">DETAILS</a></td>
-                                    <td class="text-center">
-                                        <a href="/hospital/visit/visit_cancel.php?id=<?= $row['Id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php else: ?>
-                    <p>Nothing to show</p>
-                <?php endif; ?>
-            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="5">Nothing to show</td>
+                        </tr>
+                    <?php endif; ?>
+                    </tbody>
+                </table>
         </div>
     </div>
 </div>
-
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
 
